@@ -1,0 +1,5 @@
+import sys
+sys.path.insert(1, './src')
+import statshouse
+
+statshouse.count("foo",{"1":"2"},1.22)

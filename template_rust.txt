@@ -1,0 +1,26 @@
+{{ .Include "https://raw.githubusercontent.com/VKCOM/statshouse-rs/malpinskiy/dev/statshouse/src/lib.rs" }}
+
+fn main() {
+    let mut t = Transport::default();
+{{- range $v := .Metrics }}
+    t.metric(b"{{ $v.Name }}")
+    {{- range $v := $v.Tags -}}
+        .tag(b"{{ index $v 0 }}",b"{{ index $v 1 }}")
+    {{- end -}}
+    {{- if eq $v.Kind 2 -}}
+    .write_uniques(&[
+        {{- range $i, $v := $v.Uniques -}}
+            {{ if $i }},{{ end }}{{ $v }}
+        {{- end -}}
+    ],{{ printf "%.1f" $v.Count }},{{ $v.Timestamp }});
+    {{- else if eq $v.Kind 1 -}}
+    .write_values(&[
+        {{- range $i, $v := $v.Values -}}
+            {{ if $i }},{{ end }}{{ $v }}
+        {{- end -}}
+    ],{{ printf "%.1f" $v.Count }},{{ $v.Timestamp }});
+    {{- else -}}
+    .write_count({{ printf "%.1f" $v.Count }},{{ $v.Timestamp }});
+    {{- end -}}
+{{- end }}
+}
